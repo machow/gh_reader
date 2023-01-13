@@ -38,8 +38,8 @@ query = """
     }
 """
 
-def fetch(owner="tidyverse", name="dplyr"):
-    gh = GithubApiSession()
+def fetch(owner="tidyverse", name="dplyr", api_key=None):
+    gh = GithubApiSession(api_key)
 
     return gh.paginated_query(
         query,

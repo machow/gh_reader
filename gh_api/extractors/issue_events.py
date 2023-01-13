@@ -1057,8 +1057,8 @@ def retry(f, n=1):
 
     raise err
 
-def fetch(ids):
-    gh = GithubApiSession()
+def fetch(ids, api_key=None):
+    gh = GithubApiSession(api_key)
 
     all_data = []
     for ids_chunk in _chunks(ids, 40):

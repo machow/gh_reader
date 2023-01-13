@@ -1,6 +1,8 @@
+import json
 import yaml
 
 from importlib.resources import files
+from pathlib import Path
 
 
 SCHEMA_TYPES = {
@@ -26,10 +28,31 @@ def create_arrow_schema(yml_config: dict):
     return pa.schema(schema_fields)
 
 
-def to_parquet(schema_name: str, data: str, out_name: str):
+def to_ndjson(d, out_file):
+    if isinstance(d, (str, Path)):
+        d = json.load(open(d))
+
+    for entry in d:
+        json.dump(entry, out_file)
+        out_file.write("\n")
+
+
+def to_parquet(schema_name: str, data: str, out_file):
     import pyarrow as pa
+
     from pyarrow import parquet
-    from pyarrow import json
+    from pyarrow import json as pa_json
+
+
+    if isinstance(data, list):
+        from io import BytesIO, StringIO
+        # we should be able to use pa.Table.from_pylist, but it seems unable to
+        # read a created_at string as a timestamp[s]. instead, just roundtrip
+        # to json :/
+        f = StringIO()
+        to_ndjson(data, f)
+        f.seek(0)
+        data = BytesIO(f.read().encode())
 
     p_schema = files("gh_api") / "schemas" / f"{schema_name}.yml"
     yml_config = yaml.safe_load(open(p_schema))
@@ -37,9 +60,9 @@ def to_parquet(schema_name: str, data: str, out_name: str):
     schema = create_arrow_schema(yml_config)
 
     try:
-        table = json.read_json(
+        table = pa_json.read_json(
             data,
-            parse_options = json.ParseOptions(explicit_schema=schema)
+            parse_options = pa_json.ParseOptions(explicit_schema=schema)
         )
     except pa.ArrowInvalid as e:
         if "Empty JSON file" in e.args[0]:
@@ -47,4 +70,4 @@ def to_parquet(schema_name: str, data: str, out_name: str):
         else:
             raise e
 
-    parquet.write_table(table, out_name)
+    parquet.write_table(table, out_file)

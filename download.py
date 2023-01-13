@@ -4,69 +4,74 @@ import jq
 
 from gh_api import extractors as ext
 from gh_api.gh_api import GithubApiSession
+from gh_api.export import to_parquet, to_ndjson
 from pyarrow import parquet
 from pathlib import Path
 from functools import partial
 
-def fetch_and_save(mod, fname, *args, **kwargs):
-    data = mod.fetch(*args, **kwargs)
-    cleaned = mod.clean(data)
 
-    #table = pa.table(cleaned)
-    #parquet.write_table(table, fname)
-    Path(fname).parent.mkdir(exist_ok=True, parents=True)
+class Downloader:
+    skip_parquet = {"issue_events"}
 
-    to_ndjson(data, str(fname) + "--raw.ndjson")
-    to_ndjson(cleaned, str(fname) + ".ndjson")
+    def __init__(self, root, api_key=None):
+        self.root = root
+        self.api_key = api_key
 
-    return cleaned
+    @staticmethod
+    def get_name(owner, name, root, fname):
+        return Path(root) / f"{owner}+{name}" / fname
 
+    def fetch_and_save(self, mod, fname, *args, **kwargs):
+        # TODO: getting name like this is very hacky
+        name = mod.__name__.split(".")[-1]
 
-def to_ndjson(d, outname):
-    if isinstance(d, (str, Path)):
-        d = json.load(open(d))
+        data = mod.fetch(*args, **kwargs, api_key=self.api_key)
+        cleaned = mod.clean(data)
 
-    with open(outname, "w") as f:
-        for entry in d:
-            json.dump(entry, f)
-            f.write("\n")
+        #table = pa.table(cleaned)
+        #parquet.write_table(table, fname)
+        self.mkdir(Path(fname).parent, exist_ok=True, parents=True)
 
+        to_ndjson(data, self.open(str(fname) + "--raw.ndjson"))
+        to_ndjson(cleaned, self.open(str(fname) + ".ndjson"))
 
-def get_name(owner, name, root, fname):
-    return Path(root) / f"{owner}+{name}" / fname
+        if name not in self.skip_parquet:
+            to_parquet(name, cleaned, self.open(str(fname) + ".parquet", mode="wb"))
 
-def dump_repo(owner="machow", name="siuba"):
-    from dotenv import load_dotenv
+        return cleaned
 
-    load_dotenv()
+    def open(self, fname, mode = "w"):
+        return open(fname, mode)
 
-    p_results = Path("results2")
+    def mkdir(self, fname, exist_ok=True, parents=True):
+        Path(fname).mkdir(exist_ok=exist_ok, parents=parents)
 
-    f_name = partial(get_name, owner, name, p_results)
+    def dump_repo(self, owner="machow", name="siuba"):
+        f_name = partial(self.get_name, owner, name, self.root)
 
-    repository = fetch_and_save(ext.repository, f_name("repository"), owner=owner, name=name)
-    ##stargazers = fetch_and_save(ext.stargazers, f_name("stargazers"), owner=owner, name=name)
-    ##labels = fetch_and_save(ext.labels, f_name("labels"), owner=owner, name=name)
+        repository = self.fetch_and_save(ext.repository, f_name("repository"), owner=owner, name=name)
+        stargazers = self.fetch_and_save(ext.stargazers, f_name("stargazers"), owner=owner, name=name)
+        labels = self.fetch_and_save(ext.labels, f_name("labels"), owner=owner, name=name)
 
-    # repos with no default_branch have no commits. This screws up our current
-    # pagination approach :/. So we check for a branch first.
-    if repository[0]["default_branch"] is not None:
-        commits = fetch_and_save(ext.commits, f_name("commits"), owner=owner, name=name)
+        # repos with no default_branch have no commits. This screws up our current
+        # pagination approach :/. So we check for a branch first.
+        if repository[0]["default_branch"] is not None:
+            commits = self.fetch_and_save(ext.commits, f_name("commits"), owner=owner, name=name)
 
-    ##issues = fetch_and_save(ext.issues, f_name("issues"), owner=owner, name=name)
-    ##pr_issues = fetch_and_save(ext.pr_issues, f_name("issues_pr"), owner=owner, name=name)
+        issues = self.fetch_and_save(ext.issues, f_name("issues"), owner=owner, name=name)
+        issues_pr = self.fetch_and_save(ext.issues_pr, f_name("issues_pr"), owner=owner, name=name)
 
-    ### get all issue ids (including PR ids) ----
-    ##all_issue_ids = [issue["id"] for issue in issues + pr_issues]
-    ##pr_ids = [issue["id"] for issue in pr_issues]
+        # get all issue ids (including PR ids) ----
+        all_issue_ids = [issue["id"] for issue in issues + issues_pr]
+        pr_ids = [issue["id"] for issue in issues_pr]
 
-    ### enriched pr data ----
-    ##fetch_and_save(ext.prs, f_name("pull_requests"), pr_ids)
+        # enriched pr data ----
+        self.fetch_and_save(ext.pull_requests, f_name("pull_requests"), pr_ids)
 
-    ### extract timeline data ----
-    ##fetch_and_save(ext.issue_comments, f_name("issue_comments"), all_issue_ids)
-    ##fetch_and_save(ext.issue_labels, f_name("issue_labels"), all_issue_ids)
-    ##fetch_and_save(ext.issue_events, f_name("issue_events"), all_issue_ids)
+        # extract timeline data ----
+        self.fetch_and_save(ext.issue_comments, f_name("issue_comments"), all_issue_ids)
+        self.fetch_and_save(ext.issue_labels, f_name("issue_labels"), all_issue_ids)
+        self.fetch_and_save(ext.issue_events, f_name("issue_events"), all_issue_ids)
 
 
 if __name__ == "__main__":

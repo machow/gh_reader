@@ -24,8 +24,8 @@ query_label = """
     }
 """
 
-def fetch(owner, name):
-    gh = GithubApiSession()
+def fetch(owner, name, api_key=None):
+    gh = GithubApiSession(api_key)
 
     return gh.query(query_label, owner=owner, name=name)["data"]
     

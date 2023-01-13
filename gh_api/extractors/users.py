@@ -28,8 +28,8 @@ def _chunks(lst, n):
         yield lst[i:i + n]
 
 
-def fetch(ids):
-    gh = GithubApiSession()
+def fetch(ids, api_key=None):
+    gh = GithubApiSession(api_key)
 
     all_data = []
     for ids_chunk in _chunks(ids, 100):

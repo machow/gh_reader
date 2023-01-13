@@ -4,8 +4,8 @@ from . import (
     issue_events,
     issue_labels,
     issues,
+    issues_pr,
     labels,
-    issue_prs,
     pull_requests,
     repository,
     stargazers
