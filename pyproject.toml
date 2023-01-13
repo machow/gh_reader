@@ -1,0 +1,10 @@
+[build-system]
+requires = ["setuptools>=45,<=58", "wheel", "setuptools_scm>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = [
+    "gh_api",
+]
+
+[tool.setuptools_scm]
