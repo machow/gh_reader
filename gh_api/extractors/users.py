@@ -57,4 +57,3 @@ def clean(data):
     }
     """
     return jq.compile(q).input(data).all()
-

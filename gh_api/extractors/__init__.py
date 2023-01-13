@@ -5,8 +5,8 @@ from . import (
     issue_labels,
     issues,
     labels,
-    pr_issues,
-    prs,
+    issue_prs,
+    pull_requests,
     repository,
     stargazers
 )

@@ -1,0 +1,9 @@
+sha: string
+repository_id: string
+author_email: string
+committer_email: string
+author_name: string
+author_date: datetime
+committer_name: string
+committer_date: datetime
+message: string

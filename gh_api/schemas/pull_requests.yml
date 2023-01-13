@@ -1,0 +1,9 @@
+id: string
+base_repo_id: string
+base_user_id: string
+head_repo_id: string
+head_user_id: string
+issue_id: string
+base_ref: string
+draft: boolean
+head_ref: string

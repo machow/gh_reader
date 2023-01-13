@@ -1,0 +1,11 @@
+id: string
+is_archived: boolean
+owner_id: string
+created_at: datetime
+default_branch: string
+description: string
+is_fork: boolean
+full_name: string
+homepage: string
+name: string
+is_private: boolean
