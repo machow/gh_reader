@@ -25,6 +25,8 @@ class Downloader:
         # TODO: getting name like this is very hacky
         name = mod.__name__.split(".")[-1]
 
+        print("Extracting: {name}")
+
         data = mod.fetch(*args, **kwargs, api_key=self.api_key)
         cleaned = mod.clean(data)
 
