@@ -1,5 +1,5 @@
 from gh_api.export import to_parquet
-from importlib import resources
+import importlib_resources as resources
 from pathlib import Path
 
 p_schema = resources.files("gh_api") / "schemas"

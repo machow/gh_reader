@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
 testpaths = [
-    "gh_api",
+    "gh_reader",
 ]
 
 [tool.setuptools_scm]
