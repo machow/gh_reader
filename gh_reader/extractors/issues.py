@@ -1,4 +1,4 @@
-from gh_api.gh_api import GithubApiSession
+from gh_reader.gh_api import GithubApiSession
 import jq
 
 query_issues = """

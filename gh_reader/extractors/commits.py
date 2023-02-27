@@ -1,5 +1,5 @@
 import jq
-from gh_api.gh_api import GithubApiSession
+from gh_reader.gh_api import GithubApiSession
 
 query = """
   query commitsQuery($owner: String!, $name: String!, $cursor: String) {

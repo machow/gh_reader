@@ -2,9 +2,9 @@ import pyarrow as pa
 import json
 import jq
 
-from gh_api import extractors as ext
-from gh_api.gh_api import GithubApiSession
-from gh_api.export import to_parquet, to_ndjson
+from gh_reader import extractors as ext
+from gh_reader.gh_api import GithubApiSession
+from gh_reader.export import to_parquet, to_ndjson
 from pyarrow import parquet
 from pathlib import Path
 from functools import partial
@@ -78,7 +78,7 @@ class Downloader:
 
 if __name__ == "__main__":
     from datetime import datetime
-    from gh_api.misc import fetch_owner_repos
+    from gh_reader.misc import fetch_owner_repos
     from dotenv import load_dotenv
 
     load_dotenv()

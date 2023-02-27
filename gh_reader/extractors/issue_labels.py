@@ -1,27 +1,17 @@
 import jq
-from gh_api.gh_api import GithubApiSession
+
+from gh_reader.gh_api import GithubApiSession
 
 # TODO: currently only fetches top 100 comments
-query_issue_comments = """
-    fragment issueCommentData on IssueComment {
-      id
-      issue { id }
-      author {
-        ... on User { id }
-        ... on Bot { id }
-        ... on Organization { id }
-      }
-      body
-      created_at: createdAt
-      updated_at: updatedAt
-    }
-
-    query issueComments($node_ids: [ID!]!) {
+query_issue_labels = """
+    query issueLabels($node_ids: [ID!]!) {
       nodes(ids: $node_ids) {
         ... on Issue {
-          comments(first: 100) {
+          id
+
+          labels(first: 25) {
             nodes {
-              ... issueCommentData
+              label_id: id
             }
             pageInfo {
               endCursor
@@ -29,10 +19,13 @@ query_issue_comments = """
             }
           }
         }
+
         ... on PullRequest {
-          comments(first: 100) {
+          id
+
+          labels(first: 25) {
             nodes {
-              ... issueCommentData
+              label_id: id
             }
             pageInfo {
               endCursor
@@ -49,6 +42,8 @@ query_issue_comments = """
 def _chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
 
+    # TODO: consolidate
+
     # from https://stackoverflow.com/a/312464/1144523
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
@@ -61,7 +56,7 @@ def fetch(ids, api_key=None):
     for ids_chunk in _chunks(ids, 100):
 
         crnt_data = gh.query(
-            query_issue_comments,
+            query_issue_labels,
             node_ids = ids_chunk
         )
 
@@ -71,14 +66,6 @@ def fetch(ids, api_key=None):
 
 
 def clean(data):
-    q = """
-    .[]| .nodes[] | .comments.nodes[] | {
-      id: .id,
-      issue_id: .issue.id,
-      user_id: .author.id,
-      body: .body,
-      created_at: .created_at,
-      updated_at: .updated_at
-    }
-    """
+    q = ".[] | .nodes[] | . as $issue | .labels.nodes[] | {issue_id: $issue.id} + ."
+
     return jq.compile(q).input(data).all()

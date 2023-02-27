@@ -1,5 +1,5 @@
 import jq
-from gh_api.gh_api import GithubApiSession, GithubApiError, GithubApiRateLimitError
+from gh_reader.gh_api import GithubApiSession, GithubApiError, GithubApiRateLimitError
 
 query_issue_events = """
 fragment actorId on Actor {

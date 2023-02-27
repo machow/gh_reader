@@ -1,5 +1,5 @@
 import jq
-from gh_api.gh_api import GithubApiSession
+from gh_reader.gh_api import GithubApiSession
 
 # TODO: currently only fetches top 100 comments
 query = """

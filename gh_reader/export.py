@@ -54,7 +54,7 @@ def to_parquet(schema_name: str, data: str, out_file):
         f.seek(0)
         data = BytesIO(f.read().encode())
 
-    p_schema = files("gh_api") / "schemas" / f"{schema_name}.yml"
+    p_schema = files("gh_reader") / "schemas" / f"{schema_name}.yml"
     yml_config = yaml.safe_load(open(p_schema))
 
     schema = create_arrow_schema(yml_config)

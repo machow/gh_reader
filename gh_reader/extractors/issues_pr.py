@@ -1,6 +1,6 @@
 import jq
 
-from gh_api.gh_api import GithubApiSession
+from gh_reader.gh_api import GithubApiSession
 
 query_pull_requests = """
     fragment prIssueData on PullRequest {
