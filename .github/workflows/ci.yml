@@ -26,6 +26,8 @@ jobs:
         shell: bash
         run: |
           pytest
+        env:
+          TESTS_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   release-pypi:
     name: "Release to pypi"
