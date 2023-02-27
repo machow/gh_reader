@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['main', 'dev-*']
+  pull_request:
+  release:
+    types: [published]
+
+jobs:
+  tests:
+    name: "Tests"
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+      - name: Install dependencies
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .[dev]
+      - name: Run tests
+        shell: bash
+        run: |
+          pytest
+        env:
+          TESTS_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release-pypi:
+    name: "Release to pypi"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    needs: [tests]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+      - name: "Build Package"
+        run: |
+          python -m pip install build wheel
+          python -m build --sdist --wheel
+      - name: "Deploy to Test PyPI"
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
