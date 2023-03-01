@@ -1087,5 +1087,12 @@ def fetch(ids, api_key=None):
 
 
 def clean(data):
-    q = ".[] | .nodes[] | . as $issue | .timelineItems.nodes[] | {issue_id: $issue.id} + ."
+    q = """
+        .[]
+        | .nodes[]
+        | . as $issue
+        | .timelineItems.nodes[]
+        | { issue_id: $issue.id, type: .type, data: del(.type) }
+    """
+
     return jq.compile(q).input(data).all()
