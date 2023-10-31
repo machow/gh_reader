@@ -1,5 +1,5 @@
 import jq
-from .gh_reader import GithubApiSession
+from .gh_api import GithubApiSession
 
 def fetch_owner_repos(owner):
     gh = GithubApiSession()

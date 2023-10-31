@@ -8,5 +8,6 @@ from . import (
     labels,
     pull_requests,
     repository,
-    stargazers
+    stargazers,
+    users
 )
