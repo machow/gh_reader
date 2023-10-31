@@ -13,9 +13,10 @@ from functools import partial
 class Downloader:
     skip_parquet = {"issue_events"}
 
-    def __init__(self, root, api_key=None):
+    def __init__(self, root, api_key=None, fs=None):
         self.root = root
         self.api_key = api_key
+        self.fs = fs
 
     @staticmethod
     def get_name(owner, name, root, fname):
@@ -34,19 +35,29 @@ class Downloader:
         #parquet.write_table(table, fname)
         self.mkdir(Path(fname).parent, exist_ok=True, parents=True)
 
-        to_ndjson(data, self.open(str(fname) + "--raw.ndjson"))
-        to_ndjson(cleaned, self.open(str(fname) + ".ndjson"))
+        with self.open(str(fname) + "--raw.ndjson") as f:
+            to_ndjson(data, f)
+
+        with self.open(str(fname) + ".ndjson") as f:
+            to_ndjson(cleaned, f)
 
         if name not in self.skip_parquet:
-            to_parquet(name, cleaned, self.open(str(fname) + ".parquet", mode="wb"))
+            with self.open(str(fname) + ".parquet", mode="wb") as f:
+                to_parquet(name, cleaned, f)
 
         return cleaned
 
     def open(self, fname, mode = "w"):
+        if self.fs:
+            return fs.open(fname, mode)
+
         return open(fname, mode)
 
     def mkdir(self, fname, exist_ok=True, parents=True):
-        Path(fname).mkdir(exist_ok=exist_ok, parents=parents)
+        if self.fs:
+            fs.mkdir(fname, create_parents=parents)
+        else:
+            Path(fname).mkdir(exist_ok=exist_ok, parents=parents)
 
     def dump_repo(self, owner="machow", name="siuba"):
         f_name = partial(self.get_name, owner, name, self.root)

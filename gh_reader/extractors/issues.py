@@ -39,7 +39,17 @@ query_issues = """
 """
 
 
-def fetch(owner="tidyverse", name="dplyr", api_key=None):
+def fetch(owner="tidyverse", name="dplyr", since = None, api_key=None):
+    """Fetch issues for a repository.
+
+    Notes
+    -----
+
+    The since parameter uses the issues updatedAt field, so may return issues
+    that were created earlier and subsequently updated.
+
+    """
+
     gh = GithubApiSession(api_key)
 
     return gh.paginated_query(
@@ -50,7 +60,8 @@ def fetch(owner="tidyverse", name="dplyr", api_key=None):
         cursor_variable="cursor",
         variables=dict(
             owner=owner,
-            name=name
+            name=name,
+            since = since
         )
     )
 

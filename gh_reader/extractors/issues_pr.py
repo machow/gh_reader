@@ -40,10 +40,10 @@ query_pull_requests = """
 """
 
 
-def fetch(owner="tidyverse", name="dplyr", api_key=None):
+def fetch(owner="tidyverse", name="dplyr", since = None, api_key=None):
     gh = GithubApiSession(api_key)
 
-    return gh.paginated_query(
+    results = gh.paginated_query(
         query_pull_requests,
         cursor_path="repository.pullRequests.pageInfo",
         next_key="endCursor",
@@ -51,9 +51,12 @@ def fetch(owner="tidyverse", name="dplyr", api_key=None):
         cursor_variable="cursor",
         variables=dict(
             owner=owner,
-            name=name
+            name=name,
+            since = since,
         )
     )
+
+    return results
 
 
 def clean(data):
