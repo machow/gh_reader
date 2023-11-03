@@ -7,6 +7,7 @@ from . import (
     issues_pr,
     labels,
     pull_requests,
+    reactions,
     repository,
     stargazers,
     users
