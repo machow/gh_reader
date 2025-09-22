@@ -82,9 +82,14 @@ class Downloader:
         self.fetch_and_save(ext.pull_requests, f_name("pull_requests"), pr_ids)
 
         # extract timeline data ----
-        self.fetch_and_save(ext.issue_comments, f_name("issue_comments"), all_issue_ids)
+        issue_comments = self.fetch_and_save(ext.issue_comments, f_name("issue_comments"), all_issue_ids)
         self.fetch_and_save(ext.issue_labels, f_name("issue_labels"), all_issue_ids)
         self.fetch_and_save(ext.issue_events, f_name("issue_events"), all_issue_ids)
+
+        issue_comment_ids = [row["id"] for row in issue_comments]
+        reactable_ids = [*all_issue_ids, *issue_comment_ids]
+
+        self.fetch_and_save(ext.reactions, f_name("reactions"), reactable_ids)
 
 
 if __name__ == "__main__":

@@ -1,10 +1,53 @@
 [build-system]
-requires = ["setuptools>=45,<=58", "wheel", "setuptools_scm>=6.2"]
+requires = ["setuptools>=80", "wheel", "setuptools_scm>=6.2"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+
+[tool.setuptools.packages.find]
+include = ["gh_reader"]
+
+[project]
+name = "gh-reader"
+description = "Extract github data into very reasonable tables."
+readme = "README.md"
+requires-python = ">=3.9"
+dynamic = ["version"]
+license.file = "LICENSE"
+authors = [
+    {name = "Michael Chow", email = "mc_al_github@fastmail.com"}
+]
+keywords = ["template", "packaging"]
+classifiers = [
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+dependencies = [
+    "jq",
+    "requests",
+    "importlib-resources",
+    "pyarrow",
+    "pyyaml",
+]
+
+[project.urls]
+Homepage = "https://github.com/machow/gh_reader"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-dotenv",
+]
 
 [tool.pytest.ini_options]
 testpaths = [
     "gh_reader",
 ]
 
-[tool.setuptools_scm]
+[tool.flake8]
+exclude = ["docs"]
+max-line-length = 90
+ignore = [
+    "E501",  # line too long
+    "W503",  # line before binary operator
+]
